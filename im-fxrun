@@ -11,16 +11,19 @@ EOF
 }
 
 function usage() {
-    echo Usage: im-fxrun \[options\] \[red\] \[green\] \[blue\]
+    echo Usage: im-fxrun \[options\] \[red\] \[green\] \[blue\] \[extra\]
 }
 
 function help_text(){
     cat << EOF
 $(banner)
+
 $(usage)
 
-Defaults shown in [].
-
+Options:
+-s, --size          size of image
+-c, --colorspace    colorspace of image
+-h, --help          this help
 EOF
 }
 
