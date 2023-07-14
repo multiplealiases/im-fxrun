@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+
+function banner() {
+    cat << EOF
+Generate images from RGB triplets of ImageMagick -fx "scripts"
+echo and save the scripts + parameters used for reproductibility
+EOF
+}
+
+function usage() {
+    echo Usage: im-fxrun \[options\] \[red\] \[green\] \[blue\]
+}
+
+function help_text(){
+    cat << EOF
+$(banner)
+$(usage)
+
+Defaults shown in [].
+
+EOF
+}
+
+function err_file_notexist(){
+    1>&2 printf ''\''%s'\'': file does not exist\n' "$1"
+    exit 1
+}
+
+function err_file_exist(){
+    1>&2 printf ''\''%s'\'': file exists\n' "$1"
+    exit 1
+}
+
+function err_no_image(){
+    1>&2 echo error generating image or saving auxiliary data; cleaning up
+    set +o nounset
+    rm "$filename"
+    for ext in R G B extra
+    do
+        rm "$filename"."$ext"
+    done
+    exit 1
+}
+
+components=( )
+
+ARGS="$(getopt --options h.c:,s: --long help,colorspace:,size: -- "$@")"
+eval set -- "$ARGS"
+while true
+do
+    case "$1" in
+    -s | --size)
+        size="$2"
+        shift 2
+        ;;
+    -c | --colorspace)
+        colorspace="$2"
+        shift 2
+        ;;
+    -h | --help)
+        help_text
+        exit 1
+        ;;
+    --)
+        set +o nounset
+        if [[ ! -e "$2" ]]
+        then
+            err_file_notexist "$2"
+        fi
+        set -o nounset
+        components+=("$2")
+        break
+        ;;
+    *)
+        printf 'How did you get here? The last args I saw were \n%s\n' "$@"
+        exit 1
+        break
+        ;;
+    esac
+done
+
+set +o nounset
+source "${components[3]}" || true
+set -o nounset
+
+if [[ ${#components[@]} != 4 ]]
+then
+    1>&2 printf 'Expected 4 components, got %s' ${#components[@]}
+fi
+
+filename="$(mktemp "$(date +%s)"-XXXX --suffix .png)"
+for ext in R G B extra
+do
+    [[ -e "$filename"."$ext" ]] && err_file_exist "$filename"."$ext"
+    touch "$filename"."$ext"
+done
+
+trap 'cleanup_err' ERR EXIT
+
+magick -size "$size" -colorspace "$colorspace" canvas:black \
+-channel R -fx @"${components[0]}" \
+-channel G -fx @"${components[1]}" \
+-channel B -fx @"${components[2]}" \
+"$filename"
+
+cat "${components[0]}" > "$filename".R
+cat "${components[1]}" > "$filename".G
+cat "${components[2]}" > "$filename".B
+
+cat << EOF > "$filename".extra
+size=$size
+colorspace=$colorspace
+EOF
+
+trap '' ERR EXIT
