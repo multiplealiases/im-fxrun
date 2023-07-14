@@ -107,11 +107,11 @@ done
 
 trap 'err_no_image' ERR EXIT
 
-magick -size "$size" -colorspace "$colorspace" canvas:black \
+magick -size "$size" canvas:black \
 -channel R -fx @"${components[0]}" \
 -channel G -fx @"${components[1]}" \
 -channel B -fx @"${components[2]}" \
-"$filename"
+-colorspace "$colorspace" "$filename"
 
 cat "${components[0]}" > "$filename".rcol
 cat "${components[1]}" > "$filename".gcol
