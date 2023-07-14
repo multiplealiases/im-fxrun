@@ -93,9 +93,10 @@ set +o nounset
 source "${components[3]}" || true
 set -o nounset
 
-if [[ ${#components[@]} != 4 ]]
+if [[ ! ( (${#components[@]} == 3) || (${#components[@]} == 4) ) ]]
 then
-    1>&2 printf 'Expected 4 components, got %s' ${#components[@]}
+    1>&2 printf 'Expected 3 or 4 components, got %s\n' ${#components[@]}
+    exit 1
 fi
 
 filename="$(mktemp "$(date +%s)"-XXXX --suffix .png)"
