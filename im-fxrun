@@ -47,6 +47,12 @@ function err_no_image(){
 
 components=( )
 
+if [[ ${#@} == 0 ]]
+then
+    help_text
+    exit 1
+fi
+
 ARGS="$(getopt --options h.c:,s: --long help,colorspace:,size: -- "$@")"
 eval set -- "$ARGS"
 while true
