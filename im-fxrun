@@ -38,7 +38,7 @@ function err_file_exist(){
 }
 
 function err_no_image(){
-    1>&2 echo error generating image or saving auxiliary data; cleaning up
+    1>&2 echo error generating image or saving auxiliary data: cleaning up
     set +o nounset
     rm "$filename"
     for ext in rcol bcol gcol extra
