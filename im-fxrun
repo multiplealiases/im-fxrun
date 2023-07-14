@@ -56,7 +56,7 @@ then
     exit 1
 fi
 
-ARGS="$(getopt --options h.c:,s: --long help,colorspace:,size: "$@")"
+ARGS="$(getopt --options h.c:,s: --long help,colorspace:,size: -- "$@")"
 eval set -- "$ARGS"
 while [[ ${#@} != 0 ]]
 do
