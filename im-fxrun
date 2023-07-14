@@ -107,7 +107,7 @@ do
     touch "$filename"."$ext"
 done
 
-trap 'cleanup_err' ERR EXIT
+trap 'err_no_image' ERR EXIT
 
 magick -size "$size" -colorspace "$colorspace" canvas:black \
 -channel R -fx @"${components[0]}" \
