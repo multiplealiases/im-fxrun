@@ -1,0 +1,5 @@
+ishift = 1;
+jshift = 1;
+it = (pi/256) * i;
+jt = (pi/256) * j;
+(cos(it - ishift) + cos(jt - jshift))/2
