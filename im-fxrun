@@ -56,9 +56,9 @@ then
     exit 1
 fi
 
-ARGS="$(getopt --options h.c:,s: --long help,colorspace:,size: -- "$@")"
+ARGS="$(getopt --options h.c:,s: --long help,colorspace:,size: "$@")"
 eval set -- "$ARGS"
-while true
+while [[ ${#@} != 0 ]]
 do
     case "$1" in
     -s | --size)
@@ -74,19 +74,17 @@ do
         exit 1
         ;;
     --)
-        set +o nounset
-        if [[ ! -e "$2" ]]
-        then
-            err_file_notexist "$2"
-        fi
-        set -o nounset
-        components+=("$2")
-        break
+        shift
         ;;
     *)
-        printf 'How did you get here? The last args I saw were \n%s\n' "$@"
-        exit 1
-        break
+        set +o nounset
+        if [[ ! -e "$1" ]]
+        then
+            err_file_notexist "$1"
+        fi
+        set -o nounset
+        components+=("$1")
+        shift
         ;;
     esac
 done
