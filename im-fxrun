@@ -89,11 +89,10 @@ do
     esac
 done
 
-set +o nounset
-source "${components[3]}" || true
-set -o nounset
-
-if [[ ! ( (${#components[@]} == 3) || (${#components[@]} == 4) ) ]]
+if [[ (${#components[@]} == 4) ]]
+then
+    source "${components[3]}"
+elif [[ ${#components[@]} != 3 ]]
 then
     1>&2 printf 'Expected 3 or 4 components, got %s\n' ${#components[@]}
     exit 1
