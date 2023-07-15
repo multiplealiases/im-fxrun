@@ -23,6 +23,7 @@ $(usage)
 Options:
 -s, --size          size of image
 -c, --colorspace    colorspace of image
+-o, --output        output filename of image
 -h, --help          this help
 EOF
 }
@@ -56,7 +57,7 @@ then
     exit 1
 fi
 
-ARGS="$(getopt --options h.c:,s: --long help,colorspace:,size: -- "$@")"
+ARGS="$(getopt --options h.c:,s:,o: --long help,colorspace:,size:,output: -- "$@")"
 eval set -- "$ARGS"
 while [[ ${#@} != 0 ]]
 do
@@ -72,6 +73,10 @@ do
     -h | --help)
         help_text
         exit 1
+        ;;
+    -o | --output)
+        filename="$2"
+        shift 2
         ;;
     --)
         shift
@@ -98,7 +103,13 @@ then
     exit 1
 fi
 
-filename="$(mktemp "$(date +%s)"-XXXX --suffix .png)"
+set +o nounset
+if [[ -e "$filename" ]]
+then
+    filename="$(mktemp "$(date +%s)"-XXXX --suffix .png)"
+fi
+set -o nounset
+
 for ext in rcol gcol bcol extra
 do
     [[ -e "$filename"."$ext" ]] && err_file_exist "$filename"."$ext"
