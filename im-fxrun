@@ -104,7 +104,7 @@ then
 fi
 
 set +o nounset
-if [[ -e "$filename" ]]
+if [[ ! -e "$filename" ]]
 then
     filename="$(mktemp "$(date +%s)"-XXXX --suffix .png)"
 fi
