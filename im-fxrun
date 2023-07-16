@@ -5,13 +5,13 @@ set -o errexit
 
 function banner() {
     cat << EOF
-Generate images from RGB triplets of ImageMagick -fx "scripts"
-echo and save the scripts + parameters used for reproductibility
+Generate images from colorspace components of ImageMagick -fx "scripts"
+and save the scripts + parameters used for reproductibility
 EOF
 }
 
 function usage() {
-    echo Usage: im-fxrun \[options\] \[red\] \[green\] \[blue\] \[extra\]
+    echo Usage: im-fxrun \[options\] \(colorspace components\) \[extra\]
 }
 
 function help_text(){
@@ -42,11 +42,19 @@ function err_no_image(){
     1>&2 echo error generating image or saving auxiliary data: cleaning up
     set +o errexit
     rm "$filename"
-    for ext in rcol bcol gcol extra
+    for ext in $(seq 0 $((channels - 1))) extra
     do
         rm "$filename"."$ext"
     done
     exit 1
+}
+
+function channels_in_colorspace(){
+identify -verbose -colorspace "$1" canvas:black \
+    | grep Channels \
+    | cut -f 2 -d : \
+    | cut -f 1 -d . \
+    | tr -d ' '
 }
 
 components=( )
@@ -94,10 +102,12 @@ do
     esac
 done
 
-if [[ (${#components[@]} == 4) ]]
+channels=$(channels_in_colorspace "$colorspace")
+
+if [[ (${#components[@]} == "$((channels + 1))") ]]
 then
-    source "${components[3]}"
-elif [[ ${#components[@]} != 3 ]]
+    source "${components[$((channels + 1))]}"
+elif [[ ${#components[@]} != "$channels" ]]
 then
     1>&2 printf 'Expected 3 or 4 components, got %s\n' ${#components[@]}
     exit 1
@@ -110,7 +120,7 @@ then
 fi
 set -o nounset
 
-for ext in rcol gcol bcol extra
+for ext in $(seq 0 $((channels - 1))) extra
 do
     [[ -e "$filename"."$ext" ]] && err_file_exist "$filename"."$ext"
     touch "$filename"."$ext"
@@ -118,15 +128,16 @@ done
 
 trap 'err_no_image' ERR EXIT
 
-magick -size "$size" canvas:black \
--channel R -fx @"${components[0]}" \
--channel G -fx @"${components[1]}" \
--channel B -fx @"${components[2]}" \
--colorspace "$colorspace" "$filename"
+channelcmd=( )
+for i in $(seq 0 $((channels - 1)) )
+do
+    channelcmd+=( -channel "$i" -fx @"${components[$i]}" )
+    cat "${components[$i]}" > "$filename"."$i"
+done
 
-cat "${components[0]}" > "$filename".rcol
-cat "${components[1]}" > "$filename".gcol
-cat "${components[2]}" > "$filename".bcol
+magick -size "$size" canvas:black \
+-set colorspace "$colorspace" "${channelcmd[@]}" \
+"$filename"
 
 cat << EOF > "$filename".extra
 size=$size
