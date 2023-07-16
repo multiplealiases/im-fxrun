@@ -1,0 +1,13 @@
+theta = -15 * (pi/180);
+matIzero = cos(theta);
+matIone = sin(theta);
+matJzero = -sin(theta);
+matJone = cos(theta);
+iscale = 20 * pi/1024;
+jscale = 20 * pi/1024;
+itr = -1024;
+jtr = -1024;
+it = iscale * (matIzero * (i + itr) + matIone * (j + itr));
+jt = jscale * (matJzero * (i + jtr) + matJone * (j + jtr));
+expr = abs((sin(it)/it + sin(jt)/jt)/2);
+expr * 2
